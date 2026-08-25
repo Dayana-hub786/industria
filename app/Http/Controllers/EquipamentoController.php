@@ -1,64 +1,77 @@
 <?php
-
+ 
 namespace App\Http\Controllers;
-
+ 
+use App\Models\Equipamento;
+use App\Models\Setor;
 use Illuminate\Http\Request;
-
+ 
 class EquipamentoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $equipamentos = Equipamento::all();
+ 
+        return view('equipamentos.index', compact('equipamentos'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
+ 
     public function create()
     {
-        //
+        $setores = Setor::all();
+ 
+        return view('equipamentos.create', compact('setores'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+ 
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nome' => 'required|max:150',
+            'patrimonio' => 'required|max:30|unique:equipamentos,patrimonio',
+            'setor_id' => 'required|exists:setores,id',
+            'status' => 'required|max:20',
+        ]);
+ 
+        Equipamento::create($request->all());
+ 
+        return redirect()
+            ->route('equipamentos.index')
+            ->with('success', 'Equipamento cadastrado com sucesso!');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+ 
+    public function edit($id)
     {
-        //
+        $equipamento = Equipamento::findOrFail($id);
+        $setores = Setor::all();
+ 
+        return view('equipamentos.edit', compact('equipamento', 'setores'));
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+ 
+    public function update(Request $request, $id)
     {
-        //
+        $equipamento = Equipamento::findOrFail($id);
+ 
+        $request->validate([
+            'nome' => 'required|max:150',
+            'patrimonio' => 'required|max:30|unique:equipamentos,patrimonio,' . $id,
+            'setor_id' => 'required|exists:setores,id',
+            'status' => 'required|max:20',
+        ]);
+ 
+        $equipamento->update($request->all());
+ 
+        return redirect()
+            ->route('equipamentos.index')
+            ->with('success', 'Equipamento atualizado com sucesso!');
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+ 
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $equipamento = Equipamento::findOrFail($id);
+ 
+        $equipamento->delete();
+ 
+        return redirect()
+            ->route('equipamentos.index')
+            ->with('success', 'Equipamento excluído com sucesso!');
     }
 }
